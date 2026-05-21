@@ -279,10 +279,8 @@ def obtener_noticia_cordoba():
     
     print(f"Se encontraron {len(feed.entries)} noticias potenciales. Filtrando...")
     
-    # Buscamos la primera noticia válida
-    noticia_valida = None
-    titulo_limpio = ""
-    fuente = ""
+    # Buscamos todas las noticias válidas
+    noticias_validas = []
     
     palabras_legales = [
         'fallo', 'juez', 'sentencia', 'fiscal', 'corte', 'tribunal', 'justicia', 
@@ -330,18 +328,27 @@ def obtener_noticia_cordoba():
         if not (menciona_cordoba or es_fuente_local):
             continue
             
-        noticia_valida = entrada
-        titulo_limpio = t_limpio
-        fuente = f_fuente
-        break
+        noticias_validas.append({
+            'entrada': entrada,
+            'titulo_limpio': t_limpio,
+            'fuente': f_fuente
+        })
         
-    if not noticia_valida:
+    if not noticias_validas:
         print("No se encontraron noticias válidas nuevas después de filtrar estrictamente.")
         return None
 
+    import random
+    # Seleccionamos una noticia al azar entre las válidas para evitar repetir
+    seleccionada = random.choice(noticias_validas[:10]) # Entre las 10 mejores
+    
+    noticia_valida = seleccionada['entrada']
+    titulo_limpio = seleccionada['titulo_limpio']
+    fuente = seleccionada['fuente']
+
     enlace = getattr(noticia_valida, 'link', '')
     
-    # Guardar la noticia elegida en el historial para no volver a subirla
+    # Guardar la noticia elegida en el historial temporal
     with open(historial_path, 'a', encoding='utf-8') as f:
         f.write(enlace + '\n')
     print(f"Noticia encontrada: {titulo_limpio}")
