@@ -12,7 +12,8 @@ app = Flask(__name__)
 logs = []
 
 def add_log(msg):
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    tz = pytz.timezone('America/Argentina/Cordoba')
+    timestamp = datetime.datetime.now(tz).strftime("%Y-%m-%d %H:%M:%S")
     logs.insert(0, f"[{timestamp}] {msg}")
     print(f"[{timestamp}] {msg}")
 
