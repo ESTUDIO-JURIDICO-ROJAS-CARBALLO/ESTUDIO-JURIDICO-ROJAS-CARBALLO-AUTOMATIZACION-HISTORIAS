@@ -259,6 +259,15 @@ def obtener_metadatos_url(url):
 
 def obtener_noticia_cordoba():
     print("Buscando noticias estrictamente legales en Google News...")
+    
+    # Cargar historial de noticias ya publicadas
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    historial_path = os.path.join(base_dir, 'historial.txt')
+    urls_publicadas = set()
+    if os.path.exists(historial_path):
+        with open(historial_path, 'r', encoding='utf-8') as f:
+            urls_publicadas = set(line.strip() for line in f if line.strip())
+            
     # Búsqueda de jurisprudencia y actualidad legal en Córdoba
     query = '%28fallo+OR+sentencia+OR+justicia+OR+juez+OR+tribunal+OR+denuncia+OR+demanda%29+C%C3%B3rdoba+Argentina'
     url = f"https://news.google.com/rss/search?q={query}+when:7d&hl=es-419&gl=AR"
@@ -285,6 +294,10 @@ def obtener_noticia_cordoba():
     fuentes_cordoba = ['la voz', 'lavoz', 'cba24n', 'el doce', 'eldoce', 'cadena 3', 'comercio y justicia', 'hoy dia cordoba', 'puntal']
     
     for entrada in feed.entries:
+        enlace_original = getattr(entrada, 'link', '')
+        if enlace_original in urls_publicadas:
+            continue
+            
         titulo_completo = entrada.title
         
         # Separar la fuente del título
@@ -323,10 +336,14 @@ def obtener_noticia_cordoba():
         break
         
     if not noticia_valida:
-        print("No se encontraron noticias válidas después de filtrar estrictamente.")
+        print("No se encontraron noticias válidas nuevas después de filtrar estrictamente.")
         return None
 
     enlace = getattr(noticia_valida, 'link', '')
+    
+    # Guardar la noticia elegida en el historial para no volver a subirla
+    with open(historial_path, 'a', encoding='utf-8') as f:
+        f.write(enlace + '\n')
     print(f"Noticia encontrada: {titulo_limpio}")
     
     print("Extrayendo descripción de la noticia...")
